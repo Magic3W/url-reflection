@@ -8,6 +8,14 @@
             "name": "César de la Cal Bretschneider",
             "email": "cesar@magic3w.com"
         }
-    ],
-    "require": {}
+	],
+	"autoload": {
+		"psr-4": {
+			"magic3w\\http\\url\\reflection\\": "src/"
+		}
+	},
+    "require": {},
+    "require-dev": {
+        "phpunit/phpunit": "^9.3"
+    }
 }
