@@ -1,0 +1,13 @@
+{
+    "name": "magic3w/url-reflection",
+    "description": "Allows applications to have a URL parsed and retrieve information about it's components",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "César de la Cal Bretschneider",
+            "email": "cesar@magic3w.com"
+        }
+    ],
+    "require": {}
+}
