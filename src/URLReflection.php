@@ -184,6 +184,26 @@ class URLReflection
 		$this->path = $path;
 		return $this;
 	}
+
+	/**
+	 * Creates a copy of this URL reflection without including the credentials.
+	 * 
+	 * I personally find this extremely useful for URLs that include API credentials, like
+	 * https://appid:appsecret@ssoserver. These URLs are then used by the application without
+	 * the secret and appid embedded like this.
+	 * 
+	 * Instead, our application can do something like this:
+	 * <code>
+	 * $appid = $reflection->getUsername();
+	 * $secret = $reflection->getPassword();
+	 * $endpoint = $reflection->stripCredentials();
+	 * </code>
+	 * 
+	 * @return URLReflection
+	 */
+	public function stripCredentials() {
+		return new self($this->protocol, $this->hostname, $this->port, false, false, $this->path, http_build_query($this->queryString));
+	}
 	
 	/**
 	 * Reads the settings from a URL. 
@@ -216,6 +236,36 @@ class URLReflection
 			$ops['query'],
 			$ops['fragment']
 		);
+	}
+
+	/**
+	 * Converts the reflection to a URL. This prevents the application from having
+	 * to treat these differently from how a regular URL would be treated.
+	 * 
+	 * @return string
+	 */
+	public function __toString() {
+
+		if ($this->password && !$this->user) {
+			throw new \Exception('URL format error', 2010301458);
+		}
+
+		$protocol = $this->protocol?? 'http';
+		$credentials = implode(':', array_filter([$this->user, $this->password]));
+		$hostname = $this->hostname;
+		$path = $this->path;
+		$query = $this->queryString? sprintf('?%s', http_build_query($this->queryString)) : '';
+
+		$t = sprintf(
+			'%s://%s%s%s%s', 
+			$protocol,
+			$credentials? $credentials . '@' : '',
+			$hostname,
+			$path,
+			$query
+		);
+		
+		return $t;
 	}
 	
 }
