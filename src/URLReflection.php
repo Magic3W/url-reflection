@@ -209,10 +209,10 @@ class URLReflection
 	 * Reads the settings from a URL. 
 	 * 
 	 * @todo Move to external URL parser
-	 * @param Settings|string $url
-	 * @return Settings
+	 * @param URLReflection|string $url
+	 * @return URLReflection
 	 */
-	public static function fromURL($url) {
+	public static function fromURL($url) : URLReflection {
 		
 		/*
 		 * If the parameter provided is already a settings object, it will be 
