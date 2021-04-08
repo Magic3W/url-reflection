@@ -66,7 +66,7 @@ class URLReflection
 	 * 
 	 * @var string
 	 */
-	private $user;
+	private $user = '';
 
 	/**
 	 * In case the URL contains authentication information, this
@@ -74,7 +74,7 @@ class URLReflection
 	 * 
 	 * @var string
 	 */
-	private $password;
+	private $password = '';
 
 	/**
 	 * The path requested. Please note that the path will include the 
@@ -84,6 +84,14 @@ class URLReflection
 	 * @var string
 	 */
 	private $path;
+
+	/**
+	 * The fragment allows to add client only information to a URL, this information
+	 * will not be transmitted to the server.
+	 * 
+	 * @var string
+	 */
+	private $fragment;
 
 	/**
 	 * Information extrracted from the query string. The query string is parsed 
@@ -110,79 +118,230 @@ class URLReflection
 		'fragment' => ''
 	];
 	
-	public function __construct($protocol, $hostname, $port, $user, $password, $path, $querystr) {
+	/**
+	 * 
+	 * @param string $protocol
+	 * @param string $hostname
+	 * @param int $port
+	 * @param string $path
+	 * @param string $querystr
+	 */
+	public function __construct(string $protocol, string $hostname, int $port = null, string $path, string $querystr) 
+	{
 		$this->protocol = $protocol;
 		$this->hostname = $hostname;
 		$this->port   = $port === null? ($protocol === 'http'? 80 : 443) : $port;
-		$this->user = $user;
-		$this->password = $password;
 		$this->path = $path;
 		
 		parse_str($querystr, $query);
 		$this->queryString = $query;
 	}
 	
-	public function getProtocol() {
+	/**
+	 * Returns the protocol this URL is using.
+	 * 
+	 * @return string
+	 */
+	public function getProtocol() : string
+	{
 		return $this->protocol;
 	}
 	
-	public function getQueryString() {
+	/**
+	 * Returns the query string being used (as an array).
+	 * 
+	 * @return mixed[]
+	 */
+	public function getQueryString()
+	{
 		return $this->queryString;
 	}
 	
-	public function setProtocol($protocol) {
+	/**
+	 * Sets the protocol to be used to communicate when invoking this URL.
+	 * 
+	 * @param string $protocol
+	 * @return URLReflection
+	 */
+	public function setProtocol($protocol) : URLReflection
+	{
 		$this->protocol = $protocol;
 		return $this;
 	}
 	
-	public function setQueryString($queryString) {
+	/**
+	 * Sets the query string data. This contains an array of elements.
+	 * 
+	 * @param mixed[] $queryString
+	 * @return URLReflection
+	 */
+	public function setQueryString(array $queryString) : URLReflection
+	{
 		$this->queryString = $queryString;
 		return $this;
 	}
-		
-	public function getServer() {
+	
+	/**
+	 * Returns the hostname for the server that hosts this resource.
+	 * 
+	 * @deprecated
+	 * @return string
+	 */
+	public function getServer() : string
+	{
 		return $this->hostname;
 	}
 	
-	public function getUser() {
+	/**
+	 * Returns the hostname for the server that hosts this resource.
+	 * 
+	 * @return string
+	 */
+	public function getHostname() : string
+	{
+		return $this->hostname;
+	}
+	
+	/**
+	 * Returns the username used to authenticate against the server that hosts
+	 * this resource.
+	 * 
+	 * @return string
+	 */
+	public function getUser() : string
+	{
 		return $this->user;
 	}
 	
-	public function getPassword() {
+	/**
+	 * Returns the password used to authenticate against the server that hosts
+	 * this resource.
+	 * 
+	 * @return string
+	 */
+	public function getPassword() : string
+	{
 		return $this->password;
 	}
 	
-	public function getPath() {
+	/**
+	 * Returns the path that identifies the resource for this URL on the server
+	 * that hosts it.
+	 * 
+	 * @return string
+	 */
+	public function getPath() : string
+	{
 		return $this->path;
 	}
 	
-	public function getPort() {
+	
+	/**
+	 * Returns the path that identifies the resource for this URL on the server
+	 * that hosts it.
+	 * 
+	 * @return int
+	 */
+	public function getPort() : int
+	{
 		return $this->port;
 	}
 	
-	public function setServer($hostname) {
+	/**
+	 * Sets the hostname to communicate with.
+	 * 
+	 * @param string $hostname
+	 * @return URLReflection
+	 */
+	public function setHostname($hostname) : URLReflection
+	{
 		$this->hostname = $hostname;
 		return $this;
 	}
 	
-	public function setPort($port) {
+	
+	/**
+	 * Sets the hostname to communicate with.
+	 * 
+	 * @deprecated
+	 * @param string $hostname
+	 * @return URLReflection
+	 */
+	public function setServer(string $hostname) : URLReflection
+	{
+		$this->hostname = $hostname;
+		return $this;
+	}
+	
+	
+	/**
+	 * Sets the post to communicate with.
+	 * 
+	 * @param int $port
+	 * @return URLReflection
+	 */
+	public function setPort(int $port) : URLReflection
+	{
 		$this->port = $port;
 		return $this;
 	}
 	
-	public function setUser($user) {
+	/**
+	 * Sets the username to identify with against the remote server.
+	 * 
+	 * @param string $user
+	 * @return URLReflection
+	 */
+	public function setUser(string $user) : URLReflection
+	{
 		$this->user = $user;
 		return $this;
 	}
 	
-	public function setPassword($password) {
+	/**
+	 * Sets the password to identify with against the remote server.
+	 * 
+	 * @param string $password
+	 * @return URLReflection
+	 */
+	public function setPassword(string $password) : URLReflection
+	{
 		$this->password = $password;
 		return $this;
 	}
 	
-	public function setPath($path) {
+	/**
+	 * Sets the path to identify the resource.
+	 * 
+	 * @param string $path
+	 * @return URLReflection
+	 */
+	public function setPath(string $path) : URLReflection
+	{
 		$this->path = $path;
 		return $this;
+	}
+	
+	/**
+	 * Sets the fragment of the URL (this does not include the # to separate it)
+	 * 
+	 * @param string $fragment
+	 * @return URLReflection
+	 */
+	public function setFragment(string $fragment) : URLReflection
+	{
+		$this->fragment = ltrim($fragment, '#');
+		return $this;
+	}
+	
+	/**
+	 * Returns the fragment of the url.
+	 * 
+	 * @return string
+	 */
+	public function getFragment() : string
+	{
+		return $this->fragment;
 	}
 
 	/**
@@ -201,8 +360,9 @@ class URLReflection
 	 * 
 	 * @return URLReflection
 	 */
-	public function stripCredentials() {
-		return new self($this->protocol, $this->hostname, $this->port, false, false, $this->path, http_build_query($this->queryString));
+	public function stripCredentials() : URLReflection
+	{
+		return new self($this->protocol, $this->hostname, $this->port, $this->path, http_build_query($this->queryString));
 	}
 	
 	/**
@@ -212,30 +372,57 @@ class URLReflection
 	 * @param URLReflection|string $url
 	 * @return URLReflection
 	 */
-	public static function fromURL($url) : URLReflection {
-		
+	public static function fromURL($url) : URLReflection 
+	{
 		/*
 		 * If the parameter provided is already a settings object, it will be 
 		 * returned as is.
 		 */
 		if ($url instanceof self) { return $url; }
 		
-		return self::fromArray(parse_url($url));
+		/**
+		 * In the event of our url being a string, parse the url.
+		 */
+		$parsed = parse_url($url);
+		
+		/**
+		 * If the url is not a valid url, we throw an exception, letting the 
+		 * user know that the URL was not valid.
+		 */
+		if ($parsed === false) { 
+			throw new URLReflectionException('Could not parse string as url', 21021911647); 
+		}
+		
+		return self::fromArray($parsed);
 	}
 	
-	public static function fromArray($arr) {
+	/**
+	 * 
+	 * @param mixed[] $arr
+	 * @return URLReflection
+	 */
+	public static function fromArray($arr) : URLReflection
+	{
 		$ops = $arr + self::$defaults;
 		
-		return new self(
+		$_ret = new self(
 			$ops['scheme'], 
 			$ops['host'], 
 			$ops['port'], 
-			$ops['user'], 
-			$ops['pass'], 
 			$ops['path'], 
-			$ops['query'],
-			$ops['fragment']
+			$ops['query']
 		);
+		
+		if ($ops['user']) {
+			$_ret->setUser($ops['user']);
+			$_ret->setPassword($ops['pass']);
+		}
+		
+		if ($ops['fragment']) {
+			$_ret->setFragment($ops['fragment']);
+		}
+		
+		return $_ret;
 	}
 
 	/**
@@ -255,14 +442,16 @@ class URLReflection
 		$hostname = $this->hostname;
 		$path = $this->path;
 		$query = $this->queryString? sprintf('?%s', http_build_query($this->queryString)) : '';
+		$fragment = $this->fragment? sprintf('#%s', $this->fragment) : '';
 
 		$t = sprintf(
-			'%s://%s%s%s%s', 
+			'%s://%s%s%s%s%s', 
 			$protocol,
 			$credentials? $credentials . '@' : '',
 			$hostname,
 			$path,
-			$query
+			$query,
+			$fragment
 		);
 		
 		return $t;

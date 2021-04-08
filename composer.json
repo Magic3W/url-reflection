@@ -14,8 +14,14 @@
 			"magic3w\\http\\url\\reflection\\": "src/"
 		}
 	},
-    "require": {},
     "require-dev": {
-        "phpunit/phpunit": "^9.3"
-    }
+        "phpunit/phpunit": "^9.3",
+        "phpstan/phpstan": "^0.12.77"
+    },
+	"scripts": {
+		"test" : [
+			"./vendor/bin/phpstan analyze --level 7 src/",
+			"./vendor/bin/phpunit tests/"
+		]
+	}
 }

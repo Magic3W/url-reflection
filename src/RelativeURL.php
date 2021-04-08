@@ -34,16 +34,40 @@
 class RelativeURL
 {
 	
+	/**
+	 * 
+	 * @var string
+	 */
 	private $path;
+	
+	/**
+	 * @var mixed[]
+	 */
 	private $query;
 	
-	public function __construct(string $path, $query)
+	/**
+	 * 
+	 * @param string $path
+	 * @param mixed[] $query
+	 */
+	public function __construct(string $path, array $query)
 	{
 		$this->path = $path;
 		$this->query = $query;
 	}
 	
-	private function mergePaths(array $existing, array $incoming) 
+	/**
+	 * This method receives two paths (arrays of strings) and returns the existing
+	 * path extended with the incoming path.
+	 * 
+	 * The incoming path must be a relative path (something like /hello/world or 
+	 * ../world) that will be appended to the existing.
+	 * 
+	 * @param string[] $existing
+	 * @param string[] $incoming
+	 * @return string[]
+	 */
+	private function mergePaths(array $existing, array $incoming) : array
 	{
 		
 		if (empty($incoming)) {
@@ -68,7 +92,12 @@ class RelativeURL
 		}
 	}
 	
-	public function apply(URLReflection $to) 
+	/**
+	 * 
+	 * @param URLReflection $to
+	 * @return URLReflection
+	 */
+	public function apply(URLReflection $to) : URLReflection
 	{
 		$pieces = $this->mergePaths(explode('/', $to->getPath()), $this->path? explode('/', $this->path) : []);
 		$to->setPath(implode('/', $pieces));
@@ -76,9 +105,19 @@ class RelativeURL
 		return $to;
 	}
 	
-	public static function fromString(string $str) 
+	/**
+	 * 
+	 * @param string $str
+	 * @return RelativeURL
+	 */
+	public static function fromString(string $str) : RelativeURL
 	{
 		$elements = parse_url($str);
+		
+		if ($elements === false) {
+			return new self('', []);
+		}
+		
 		parse_str($elements['query']?? '', $query);
 		return new self($elements['path']?? '', $query);
 	}
