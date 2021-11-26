@@ -1,5 +1,7 @@
 <?php namespace magic3w\http\url\reflection;
 
+use Psr\Http\Message\UriInterface;
+
 /* 
  * The MIT License
  *
@@ -33,7 +35,7 @@
  * 
  * @author César de la Cal Bretschneider <cesar@magic3w.com>
  */
-class URLReflection
+class URLReflection implements UriInterface
 {
 	
 	/**
@@ -44,7 +46,7 @@ class URLReflection
 	 * 
 	 * @var string
 	 */
-	private $protocol;
+	private $scheme;
 
 	/**
 	 * The name of the server.
@@ -119,6 +121,18 @@ class URLReflection
 	];
 	
 	/**
+	 * Contains a dictionary of default ports for different schemes, this is necessary to ommit
+	 * the port in the authority section if it's the default.
+	 * 
+	 * @var array<string,int>
+	 */
+	private static $defaultPorts = [
+		'http' => 80,
+		'https' => 443,
+		'ftp'   => 21
+	];
+	
+	/**
 	 * 
 	 * @param string $protocol
 	 * @param string $hostname
@@ -128,7 +142,7 @@ class URLReflection
 	 */
 	public function __construct(string $protocol, string $hostname, int $port = null, string $path, string $querystr) 
 	{
-		$this->protocol = $protocol;
+		$this->scheme = $protocol;
 		$this->hostname = $hostname;
 		$this->port   = $port === null? ($protocol === 'http'? 80 : 443) : $port;
 		$this->path = $path;
@@ -137,19 +151,33 @@ class URLReflection
 		$this->queryString = $query;
 	}
 	
+	
 	/**
 	 * Returns the protocol this URL is using.
 	 * 
 	 * @return string
 	 */
+	public function getScheme() : string
+	{
+		return $this->scheme;
+	}
+	
+	/**
+	 * Returns the protocol this URL is using.
+	 * 
+	 * @deprecated
+	 * @return string
+	 */
 	public function getProtocol() : string
 	{
-		return $this->protocol;
+		return $this->scheme;
 	}
 	
 	/**
 	 * Returns the query string being used (as an array).
 	 * 
+	 * @deprecated This has become a misleading name, since it implies the return to be a string
+	 * while the PSR demands that getQuery is a string.
 	 * @return mixed[]
 	 */
 	public function getQueryString()
@@ -158,20 +186,92 @@ class URLReflection
 	}
 	
 	/**
+	 * Returns the query string being used (as an array).
+	 * 
+	 * @return mixed[]
+	 */
+	public function getQueryData()
+	{
+		return $this->queryString;
+	}
+	
+	/**
+	 * Returns the query string being used (as an array).
+	 * 
+	 * @return string
+	 */
+	public function getQuery()
+	{
+		return http_build_query($this->queryString, '', '&', PHP_QUERY_RFC3986);
+	}
+	
+	/**
+	 * The authority combines user information, hostname and port (if non-standard)
+	 * @inheritdoc
+	 * 
+	 * @return string
+	 */
+	public function getAuthority() : string
+	{
+		$authority = $this->hostname;
+		$userInfo  = $this->getUserInfo();
+		
+		if ($this->port !== (self::$defaultPorts[$this->scheme]?? 0) ) {
+			$authority.= ':' . strval($this->port);
+		}
+		
+		if ($userInfo) {
+			$authority = sprintf('%s@%s', $userInfo, $authority);
+		}
+		
+		return $authority;
+	}
+	
+	/**
 	 * Sets the protocol to be used to communicate when invoking this URL.
 	 * 
+	 * @param string $scheme
+	 * @return URLReflection
+	 */
+	public function withScheme($scheme) : UriInterface
+	{
+		$copy = clone $this;
+		$copy->scheme = $scheme;
+		return $copy;
+	}
+	
+	/**
+	 * Sets the protocol to be used to communicate when invoking this URL.
+	 * 
+	 * @deprecated URIs should be immutable
 	 * @param string $protocol
 	 * @return URLReflection
 	 */
 	public function setProtocol($protocol) : URLReflection
 	{
-		$this->protocol = $protocol;
+		$this->scheme = $protocol;
 		return $this;
 	}
 	
 	/**
 	 * Sets the query string data. This contains an array of elements.
 	 * 
+	 * @param string $query
+	 * @return URLReflection
+	 */
+	public function withQuery($query) : URLReflection
+	{
+		parse_str($query, $_query);
+		
+		$copy = clone $this;
+		$copy->queryString = $_query;
+		return $copy;
+	}
+	
+	/**
+	 * Sets the query string data. This contains an array of elements.
+	 * 
+	 * @deprecated
 	 * @param mixed[] $queryString
 	 * @return URLReflection
 	 */
@@ -195,9 +295,20 @@ class URLReflection
 	/**
 	 * Returns the hostname for the server that hosts this resource.
 	 * 
+	 * @deprecated
 	 * @return string
 	 */
 	public function getHostname() : string
+	{
+		return $this->hostname;
+	}
+	
+	/**
+	 * Returns the hostname for the server that hosts this resource.
+	 * 
+	 * @return string
+	 */
+	public function getHost() : string
 	{
 		return $this->hostname;
 	}
@@ -222,6 +333,27 @@ class URLReflection
 	public function getPassword() : string
 	{
 		return $this->password;
+	}
+	
+	/**
+	 * Returns the user's information.
+	 * @inheritdoc
+	 * 
+	 * @return string
+	 */
+	public function getUserInfo() : string
+	{
+		if ($this->user && $this->password) {
+			return sprintf('%s:%s', $this->user, $this->password);
+		}
+		
+		elseif ($this->user) {
+			return $this->user;
+		}
+		
+		else {
+			return '';
+		}
 	}
 	
 	/**
@@ -250,6 +382,22 @@ class URLReflection
 	/**
 	 * Sets the hostname to communicate with.
 	 * 
+	 * @param string $host
+	 * @return URLReflection
+	 */
+	public function withHost($host) : URLReflection
+	{
+		assert(is_string($host));
+		
+		$copy = clone $this;
+		$copy->hostname = $host;
+		return $copy;
+	}
+	
+	/**
+	 * Sets the hostname to communicate with.
+	 * 
+	 * @deprecated
 	 * @param string $hostname
 	 * @return URLReflection
 	 */
@@ -280,6 +428,23 @@ class URLReflection
 	 * @param int $port
 	 * @return URLReflection
 	 */
+	public function withPort($port) : URLReflection
+	{
+		assert(intval($port) > 0);
+		
+		$copy = clone $this;
+		$copy->port = $port;
+		return $copy;
+	}
+	
+	
+	/**
+	 * Sets the post to communicate with.
+	 * 
+	 * @deprecated
+	 * @param int $port
+	 * @return URLReflection
+	 */
 	public function setPort(int $port) : URLReflection
 	{
 		$this->port = $port;
@@ -289,6 +454,7 @@ class URLReflection
 	/**
 	 * Sets the username to identify with against the remote server.
 	 * 
+	 * @deprecated URIs should be immutable
 	 * @param string $user
 	 * @return URLReflection
 	 */
@@ -301,6 +467,7 @@ class URLReflection
 	/**
 	 * Sets the password to identify with against the remote server.
 	 * 
+	 * @deprecated URIs should be immutable
 	 * @param string $password
 	 * @return URLReflection
 	 */
@@ -308,6 +475,33 @@ class URLReflection
 	{
 		$this->password = $password;
 		return $this;
+	}
+	
+	/**
+	 * Set the user information for the URI. Please note that this will return a
+	 * copy of the object.
+	 * 
+	 * @inheritdoc
+	 */
+	public function withUserInfo($user, $password = null) : UriInterface
+	{
+		$copy = clone $this;
+		$copy->user = $user;
+		$copy->password = $password;
+		return $copy;
+	}
+	
+	/**
+	 * Sets the path to identify the resource.
+	 * 
+	 * @param string $path
+	 * @return URLReflection
+	 */
+	public function withPath($path) : URLReflection
+	{
+		$copy = clone $this;
+		$copy->path = $path;
+		return $copy;
 	}
 	
 	/**
@@ -325,6 +519,22 @@ class URLReflection
 	/**
 	 * Sets the fragment of the URL (this does not include the # to separate it)
 	 * 
+	 * @param string $fragment
+	 * @return URLReflection
+	 */
+	public function withFragment($fragment) : URLReflection
+	{
+		assert(is_string($fragment));
+		
+		$copy = clone $this;
+		$copy->fragment = $fragment;
+		return $copy;
+	}
+	
+	/**
+	 * Sets the fragment of the URL (this does not include the # to separate it)
+	 * 
+	 * @deprecated
 	 * @param string $fragment
 	 * @return URLReflection
 	 */
@@ -362,7 +572,7 @@ class URLReflection
 	 */
 	public function stripCredentials() : URLReflection
 	{
-		return new self($this->protocol, $this->hostname, $this->port, $this->path, http_build_query($this->queryString));
+		return new self($this->scheme, $this->hostname, $this->port, $this->path, http_build_query($this->queryString));
 	}
 	
 	/**
@@ -424,6 +634,33 @@ class URLReflection
 		
 		return $_ret;
 	}
+	
+	/**
+	 * Generates a new URL Reflection from the current request context. Returns
+	 * null if the context is a cli environment.
+	 * 
+	 * @return URLReflection|null
+	 */
+	public static function fromGlobals():? URLReflection
+	{
+		if (php_sapi_name() === 'cli') {
+			return null;
+		}
+		
+		$protocol = $_SERVER['HTTPS']? 'https' : 'http';
+		$hostname = $_SERVER['HTTP_HOST'];
+		$port     = $_SERVER['SERVER_PORT'];
+		$path     = $_SERVER['PHP_SELF'];
+		$querystr = $_SERVER['QUERY_STRING'];
+		
+		$reflection = new URLReflection($protocol, $hostname, $port, $path, $querystr);
+		
+		if ($_SERVER['AUTH_TYPE']?? false) {
+			$reflection->withUserInfo($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']);
+		}
+		
+		return $reflection;
+	}
 
 	/**
 	 * Converts the reflection to a URL. This prevents the application from having
@@ -437,7 +674,7 @@ class URLReflection
 			throw new \Exception('URL format error', 2010301458);
 		}
 
-		$protocol = $this->protocol?? 'http';
+		$protocol = $this->scheme?? 'http';
 		$credentials = implode(':', array_filter([$this->user, $this->password]));
 		$hostname = $this->hostname;
 		$path = $this->path;
