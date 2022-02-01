@@ -52,5 +52,4 @@ class RelativeURLTest extends TestCase
 		
 		$this->assertEquals('https://magic3w.com/services/development/?section=team', strval($relative->apply($full)));
 	}
-	
 }

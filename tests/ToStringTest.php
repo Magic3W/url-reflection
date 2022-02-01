@@ -4,24 +4,28 @@ use PHPUnit\Framework\TestCase;
 
 class ToStringTest extends TestCase
 {
-
-	public function testWithoutCredentials() {
+	
+	public function testWithoutCredentials()
+	{
 		$meta = URLReflection::fromURL('http://magic3w.com/about');
 		$this->assertEquals('http://magic3w.com/about', strval($meta));
 	}
-
-	public function testWithCredentials() {
+	
+	public function testWithCredentials()
+	{
 		$meta = URLReflection::fromURL('http://hello:world@magic3w.com/about');
 		$this->assertEquals('http://hello:world@magic3w.com/about', strval($meta));
 	}
-
-	public function testWithStrippedCredentials() {
+	
+	public function testWithStrippedCredentials()
+	{
 		$meta = URLReflection::fromURL('http://hello:world@magic3w.com/about');
 		$meta = $meta->stripCredentials();
 		$this->assertEquals('http://magic3w.com/about', strval($meta));
 	}
-
-	public function testWithoutProtocol() {
+	
+	public function testWithoutProtocol()
+	{
 		$meta = URLReflection::fromURL('//magic3w.com/about');
 		$this->assertEquals('https://magic3w.com/about', strval($meta));
 	}

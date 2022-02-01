@@ -47,21 +47,21 @@ class URLReflection implements UriInterface
 	 * @var string
 	 */
 	private $scheme;
-
+	
 	/**
 	 * The name of the server.
 	 * 
 	 * @var string
 	 */
 	private $hostname;
-
+	
 	/**
 	 * The port the protocol is residing on.
 	 * 
 	 * @var int
 	 */
 	private $port;
-
+	
 	/**
 	 * In case the URL contains authentication information, this
 	 * will contain the username.
@@ -69,7 +69,7 @@ class URLReflection implements UriInterface
 	 * @var string
 	 */
 	private $user = '';
-
+	
 	/**
 	 * In case the URL contains authentication information, this
 	 * will contain the username.
@@ -77,7 +77,7 @@ class URLReflection implements UriInterface
 	 * @var string
 	 */
 	private $password = '';
-
+	
 	/**
 	 * The path requested. Please note that the path will include the 
 	 * leading and ending slashes. If needed, you will have to trim these
@@ -86,7 +86,7 @@ class URLReflection implements UriInterface
 	 * @var string
 	 */
 	private $path;
-
+	
 	/**
 	 * The fragment allows to add client only information to a URL, this information
 	 * will not be transmitted to the server.
@@ -94,7 +94,7 @@ class URLReflection implements UriInterface
 	 * @var string
 	 */
 	private $fragment;
-
+	
 	/**
 	 * Information extrracted from the query string. The query string is parsed 
 	 * the way PHP would parse a _GET array, this means that arrays may be included.
@@ -216,7 +216,7 @@ class URLReflection implements UriInterface
 		$authority = $this->hostname;
 		$userInfo  = $this->getUserInfo();
 		
-		if ($this->port !== (self::$defaultPorts[$this->scheme]?? 0) ) {
+		if ($this->port !== (self::$defaultPorts[$this->scheme]?? 0)) {
 			$authority.= ':' . strval($this->port);
 		}
 		
@@ -553,7 +553,7 @@ class URLReflection implements UriInterface
 	{
 		return $this->fragment;
 	}
-
+	
 	/**
 	 * Creates a copy of this URL reflection without including the credentials.
 	 * 
@@ -588,7 +588,9 @@ class URLReflection implements UriInterface
 		 * If the parameter provided is already a settings object, it will be 
 		 * returned as is.
 		 */
-		if ($url instanceof self) { return $url; }
+		if ($url instanceof self) {
+			return $url; 
+		}
 		
 		/**
 		 * In the event of our url being a string, parse the url.
@@ -661,26 +663,27 @@ class URLReflection implements UriInterface
 		
 		return $reflection;
 	}
-
+	
 	/**
 	 * Converts the reflection to a URL. This prevents the application from having
 	 * to treat these differently from how a regular URL would be treated.
 	 * 
 	 * @return string
 	 */
-	public function __toString() {
-
+	public function __toString()
+	{
+		
 		if ($this->password && !$this->user) {
 			throw new \Exception('URL format error', 2010301458);
 		}
-
+		
 		$protocol = $this->scheme?? 'http';
 		$credentials = implode(':', array_filter([$this->user, $this->password]));
 		$hostname = $this->hostname;
 		$path = $this->path;
 		$query = $this->queryString? sprintf('?%s', http_build_query($this->queryString)) : '';
 		$fragment = $this->fragment? sprintf('#%s', $this->fragment) : '';
-
+		
 		$t = sprintf(
 			'%s://%s%s%s%s%s', 
 			$protocol,
@@ -693,5 +696,4 @@ class URLReflection implements UriInterface
 		
 		return $t;
 	}
-	
 }

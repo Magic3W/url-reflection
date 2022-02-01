@@ -78,7 +78,7 @@ class RelativeURL
 		#This assumes that the URL was terminated with a / if the url was for a directory
 		array_pop($existing);
 		
-		switch($incoming[0]) {
+		switch ($incoming[0]) {
 			case '': 
 				return $incoming;
 			case '.':
@@ -121,5 +121,4 @@ class RelativeURL
 		parse_str($elements['query']?? '', $query);
 		return new self($elements['path']?? '', $query);
 	}
-	
 }

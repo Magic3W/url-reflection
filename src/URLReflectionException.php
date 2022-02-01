@@ -1,6 +1,5 @@
 <?php namespace magic3w\http\url\reflection;
 
-
 /* 
  * The MIT License
  *
@@ -31,7 +30,7 @@
  * 
  * @author César de la Cal Bretschneider <cesar@magic3w.com>
  */
-class URLReflectionException extends \Exception 
+class URLReflectionException extends \Exception
 {
-
+	
 }

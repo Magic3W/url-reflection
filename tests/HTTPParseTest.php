@@ -4,8 +4,9 @@ use PHPUnit\Framework\TestCase;
 
 class HTTPParseTest extends TestCase
 {
-
-	public function testParse() {
+	
+	public function testParse()
+	{
 		$meta = URLReflection::fromURL('http://magic3w.com/about');
 		$this->assertEquals('magic3w.com', $meta->getHost());
 		$this->assertEquals('/about', $meta->getPath());
