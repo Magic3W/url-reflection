@@ -649,7 +649,18 @@ class URLReflection implements UriInterface
 			return null;
 		}
 		
-		$protocol = $_SERVER['HTTPS']? 'https' : 'http';
+		/**
+		 * PHP is a bit weird about the way it handles the HTTPS key. It contains a
+		 * non empty value whenever the request is HTTPS, but the key disappears if
+		 * the request is not sent via HTTPS.
+		 */
+		if (isset($_SERVER['HTTPS'])) {
+			$protocol = $_SERVER['HTTPS']? 'https' : 'http';
+		}
+		else {
+			$protocol = 'http';
+		}
+		
 		$hostname = $_SERVER['HTTP_HOST'];
 		$port     = $_SERVER['SERVER_PORT'];
 		$path     = $_SERVER['PHP_SELF'];
