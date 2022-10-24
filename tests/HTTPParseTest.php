@@ -19,6 +19,6 @@ class HTTPParseTest extends TestCase
 		$this->assertEquals('magic3w.com', $meta->getHost());
 		$this->assertEquals('/about', $meta->getPath());
 		$this->assertEquals('http', $meta->getScheme());
-		$this->assertArrayHasKey('thisisaquerystringwithnoequals_oranything', $meta->getQueryData());
+		$this->assertArrayHasKey('thisisaquerystringwithnoequals oranything', $meta->getQueryData());
 	}
 }

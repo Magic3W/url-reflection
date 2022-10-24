@@ -147,8 +147,7 @@ class URLReflection implements UriInterface
 		$this->port   = $port === null? ($protocol === 'http'? 80 : 443) : $port;
 		$this->path = $path;
 		
-		parse_str($querystr, $query);
-		$this->queryString = $query;
+		$this->queryString = QueryString::parse($querystr);
 	}
 	
 	
@@ -202,7 +201,7 @@ class URLReflection implements UriInterface
 	 */
 	public function getQuery()
 	{
-		return http_build_query($this->queryString, '', '&', PHP_QUERY_RFC3986);
+		return QueryString::encode($this->queryString);
 	}
 	
 	/**
@@ -261,10 +260,8 @@ class URLReflection implements UriInterface
 	 */
 	public function withQuery($query) : URLReflection
 	{
-		parse_str($query, $_query);
-		
 		$copy = clone $this;
-		$copy->queryString = $_query;
+		$copy->queryString = QueryString::parse($query);
 		return $copy;
 	}
 	
@@ -572,7 +569,13 @@ class URLReflection implements UriInterface
 	 */
 	public function stripCredentials() : URLReflection
 	{
-		return new self($this->scheme, $this->hostname, $this->port, $this->path, http_build_query($this->queryString));
+		return new self(
+			$this->scheme,
+			$this->hostname,
+			$this->port,
+			$this->path,
+			QueryString::encode($this->queryString)
+		);
 	}
 	
 	/**
@@ -688,11 +691,11 @@ class URLReflection implements UriInterface
 			throw new \Exception('URL format error', 2010301458);
 		}
 		
-		$protocol = $this->scheme?? 'http';
+		$protocol = $this->scheme;
 		$credentials = implode(':', array_filter([$this->user, $this->password]));
 		$hostname = $this->hostname;
 		$path = $this->path;
-		$query = $this->queryString? sprintf('?%s', http_build_query($this->queryString)) : '';
+		$query = $this->queryString? sprintf('?%s', QueryString::encode($this->queryString)) : '';
 		$fragment = $this->fragment? sprintf('#%s', $this->fragment) : '';
 		
 		$t = sprintf(
