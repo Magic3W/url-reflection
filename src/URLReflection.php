@@ -669,6 +669,8 @@ class URLReflection implements UriInterface
 		$path     = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 		$querystr = $_SERVER['QUERY_STRING'];
 		
+		assert(is_string($path));
+		
 		$reflection = new URLReflection($protocol, $hostname, $port, $path, $querystr);
 		
 		if ($_SERVER['AUTH_TYPE']?? false) {
@@ -692,8 +694,9 @@ class URLReflection implements UriInterface
 		}
 		
 		$protocol = $this->scheme;
+		$stdport  = ['http' => 80, 'https' => 443][$protocol];
 		$credentials = implode(':', array_filter([$this->user, $this->password]));
-		$hostname = $this->hostname;
+		$hostname = $this->port !== $stdport? sprintf('%s:%d', $this->hostname, $this->port) : $this->hostname;
 		$path = $this->path;
 		$query = $this->queryString? sprintf('?%s', QueryString::encode($this->queryString)) : '';
 		$fragment = $this->fragment? sprintf('#%s', $this->fragment) : '';
