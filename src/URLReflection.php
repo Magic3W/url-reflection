@@ -667,7 +667,7 @@ class URLReflection implements UriInterface
 		$hostname = $_SERVER['HTTP_HOST'];
 		$port     = $_SERVER['SERVER_PORT'];
 		$path     = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-		$querystr = $_SERVER['QUERY_STRING'];
+		$querystr = $_SERVER['QUERY_STRING']?? '';
 		
 		assert(is_string($path));
 		
